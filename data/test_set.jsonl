@@ -1,0 +1,20 @@
+{"question_id":"q_001","user_id":"user_001","question":"I still cannot use my API key. What should I do next?","gold_docs":["doc_002","doc_017"],"gold_memory":["mem_001"],"should_escalate":true}
+{"question_id":"q_002","user_id":"user_001","question":"Where do I reset my API key?","gold_docs":["doc_001"],"gold_memory":[],"should_escalate":false}
+{"question_id":"q_003","user_id":"user_002","question":"Can I still get a refund if it has been more than 14 days?","gold_docs":["doc_005","doc_017"],"gold_memory":["mem_002"],"should_escalate":true}
+{"question_id":"q_004","user_id":"user_003","question":"My upload failed because I used a ZIP file. What format should I use instead?","gold_docs":["doc_013","doc_014"],"gold_memory":["mem_003"],"should_escalate":false}
+{"question_id":"q_005","user_id":"user_004","question":"How do I invite a teammate to our workspace?","gold_docs":["doc_007"],"gold_memory":["mem_004"],"should_escalate":false}
+{"question_id":"q_006","user_id":"user_004","question":"I am a regular member and I cannot see the invite button. Why?","gold_docs":["doc_018","doc_007"],"gold_memory":["mem_004"],"should_escalate":false}
+{"question_id":"q_007","user_id":"user_005","question":"Can you delete my account and all stored data for me?","gold_docs":["doc_010","doc_017","doc_008"],"gold_memory":["mem_005"],"should_escalate":true}
+{"question_id":"q_008","user_id":"user_005","question":"How does CloudBox AI handle data privacy?","gold_docs":["doc_008"],"gold_memory":["mem_005"],"should_escalate":true}
+{"question_id":"q_009","user_id":"user_006","question":"Where can I download my invoice PDF?","gold_docs":["doc_016"],"gold_memory":["mem_006"],"should_escalate":false}
+{"question_id":"q_010","user_id":"user_006","question":"I was charged incorrectly and want this fixed now.","gold_docs":["doc_004","doc_017"],"gold_memory":["mem_006"],"should_escalate":true}
+{"question_id":"q_011","user_id":"user_007","question":"My search results are too broad. How can I improve them?","gold_docs":["doc_012"],"gold_memory":["mem_007"],"should_escalate":false}
+{"question_id":"q_012","user_id":"user_008","question":"If I cancel my subscription today, will I lose access immediately?","gold_docs":["doc_006"],"gold_memory":["mem_008"],"should_escalate":false}
+{"question_id":"q_013","user_id":"user_009","question":"I have a payment dispute on my last invoice.","gold_docs":["doc_017","doc_004"],"gold_memory":["mem_009"],"should_escalate":true}
+{"question_id":"q_014","user_id":"user_010","question":"Could missing permissions be why my API key does not work for search?","gold_docs":["doc_003"],"gold_memory":["mem_010"],"should_escalate":false}
+{"question_id":"q_015","user_id":"user_003","question":"What is the upload file size limit?","gold_docs":["doc_011"],"gold_memory":[],"should_escalate":false}
+{"question_id":"q_016","user_id":"user_008","question":"How do I cancel my plan?","gold_docs":["doc_006"],"gold_memory":["mem_008"],"should_escalate":false}
+{"question_id":"q_017","user_id":"user_011","question":"Do you support EPUB uploads?","gold_docs":["doc_013"],"gold_memory":[],"should_escalate":true}
+{"question_id":"q_018","user_id":"user_012","question":"Can I upgrade my plan from the billing page?","gold_docs":["doc_015"],"gold_memory":[],"should_escalate":false}
+{"question_id":"q_019","user_id":"user_013","question":"I forgot my password and did not receive the reset email. What should I check?","gold_docs":["doc_009"],"gold_memory":[],"should_escalate":false}
+{"question_id":"q_020","user_id":"user_014","question":"Can you guarantee a special legal privacy agreement for my company?","gold_docs":["doc_008","doc_017"],"gold_memory":[],"should_escalate":true}

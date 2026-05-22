@@ -1,0 +1,10 @@
+{"memory_id":"mem_001","user_id":"user_001","text":"User previously had an API key authentication problem and already tried regenerating the key, but still received error 401.","tags":["api_key","authentication","error_401"]}
+{"memory_id":"mem_002","user_id":"user_002","text":"User previously asked whether they could get a refund after 14 days, and they were told late refund exceptions usually require human review.","tags":["billing","refund","late_refund"]}
+{"memory_id":"mem_003","user_id":"user_003","text":"User had an upload failure caused by an unsupported ZIP file format and was advised to convert files before retrying.","tags":["upload","file_types","unsupported_format"]}
+{"memory_id":"mem_004","user_id":"user_004","text":"User asked how to invite a teammate and whether only admins can send invitations.","tags":["team","invitation","admin"]}
+{"memory_id":"mem_005","user_id":"user_005","text":"User previously asked about privacy, retention, and how account deletion might affect stored documents.","tags":["privacy","account_deletion","data_policy"]}
+{"memory_id":"mem_006","user_id":"user_006","text":"User asked where to find invoice PDFs and had a billing admin access question.","tags":["billing","invoice","admin"]}
+{"memory_id":"mem_007","user_id":"user_007","text":"User complained that search results were too broad and was advised to use more specific keywords and clearer document formatting.","tags":["search","quality","documents"]}
+{"memory_id":"mem_008","user_id":"user_008","text":"User previously asked how subscription cancellation works and whether access continues until the end of the billing period.","tags":["subscription","cancellation","billing"]}
+{"memory_id":"mem_009","user_id":"user_009","text":"User reported a payment dispute with a recent charge and was told this type of issue normally needs human support.","tags":["billing","payment_dispute","human_support"]}
+{"memory_id":"mem_010","user_id":"user_010","text":"User asked whether API keys could fail because of missing permissions on a team workspace.","tags":["api_key","permissions","team"]}
