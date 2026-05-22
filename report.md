@@ -1,6 +1,6 @@
 # Report Draft: Memory-based Customer Support Agent with Retrieval Evaluation
 
-GitHub repository: [to be added]  
+GitHub repository: https://github.com/yingjie16330-spec/memory-support-agent  
 Demo video: [to be added]
 
 ## 1. Introduction
