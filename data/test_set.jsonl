@@ -14,7 +14,7 @@
 {"question_id":"q_014","user_id":"user_010","question":"Could missing permissions be why my API key does not work for search?","gold_docs":["doc_003"],"gold_memory":["mem_010"],"should_escalate":false}
 {"question_id":"q_015","user_id":"user_003","question":"What is the upload file size limit?","gold_docs":["doc_011"],"gold_memory":[],"should_escalate":false}
 {"question_id":"q_016","user_id":"user_008","question":"How do I cancel my plan?","gold_docs":["doc_006"],"gold_memory":["mem_008"],"should_escalate":false}
-{"question_id":"q_017","user_id":"user_011","question":"Do you support EPUB uploads?","gold_docs":["doc_013"],"gold_memory":[],"should_escalate":true}
+{"question_id":"q_017","user_id":"user_011","question":"Do you support EPUB uploads?","gold_docs":["doc_013"],"gold_memory":[],"should_escalate":false}
 {"question_id":"q_018","user_id":"user_012","question":"Can I upgrade my plan from the billing page?","gold_docs":["doc_015"],"gold_memory":[],"should_escalate":false}
 {"question_id":"q_019","user_id":"user_013","question":"I forgot my password and did not receive the reset email. What should I check?","gold_docs":["doc_009"],"gold_memory":[],"should_escalate":false}
 {"question_id":"q_020","user_id":"user_014","question":"Can you guarantee a special legal privacy agreement for my company?","gold_docs":["doc_008","doc_017"],"gold_memory":[],"should_escalate":true}

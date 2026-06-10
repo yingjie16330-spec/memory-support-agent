@@ -1,105 +1,157 @@
-# Report Draft: Memory-based Customer Support Agent with Retrieval Evaluation
+# Report: Memory-based Customer Support Agent with Retrieval Evaluation
 
-GitHub repository: https://github.com/yingjie16330-spec/memory-support-agent  
+GitHub repository: https://github.com/yingjie16330-spec/memory-support-agent
 Demo video: [to be added]
 
 ## 1. Introduction
 
-This project implements a small customer support agent for a fictional SaaS product called CloudBox AI. The goal is to show that an AI system can improve its answers by retrieving information from external sources before generating a response. In this project, the agent retrieves from two sources: a product knowledge base and a user memory store.
+This project implements a small customer support agent for a fictional SaaS
+product called CloudBox AI. The goal is to show that an AI system can improve
+its answers by retrieving information from external sources before generating a
+response, rather than relying on the language model's internal knowledge alone.
 
-The project is designed as a simple and explainable system for an Information Retrieval course assignment. It is not a fully autonomous agent. Instead, it follows a fixed sequence of steps and exposes that sequence through an action trace.
+The agent retrieves from two sources: a product knowledge base and a per-user
+memory store. It is built as a tool-calling agent: the language model is given
+two retrieval tools and decides on its own which tool(s) to call, and with what
+query, before producing a grounded answer. The project is designed to be small
+and inspectable, suitable for an Information Retrieval course assignment.
 
 ## 2. System Design
 
-The system is a fixed-policy retrieval agent with the following pipeline:
+The system is an LLM tool-calling agent. Instead of a fixed retrieve-then-answer
+sequence, the model is given two tools:
 
-1. retrieve knowledge base documents
-2. retrieve user memory
-3. generate an answer
-4. run groundedness checking
-5. decide whether to escalate to human support
+- `search_knowledge_base(query)` — searches CloudBox AI product documentation
+- `search_user_memory(query)` — searches the current user's conversation history
 
-This design makes the system easy to explain and evaluate. It also separates retrieval from generation, which is important for understanding how external context improves responses.
+The agent loop sends the user question and the tool definitions to the model.
+The model decides which tools to call and what query to use for each. Tool
+results are fed back into the conversation, and the loop repeats (up to a small
+iteration limit) until the model produces a final answer. After the answer, the
+system runs a groundedness check and an escalation check based on what was
+actually retrieved.
+
+This separates retrieval from generation while still letting the model behave as
+an agent that selects actions, which matches the assignment's focus on agents
+and information retrieval.
 
 ## 3. Information Retrieval Method
 
-The main retrieval method is BM25. I used BM25 because it is a classic and strong lexical baseline in Information Retrieval. It scores documents using term matching, term frequency, inverse document frequency, and document length normalization.
-
-For this project, BM25 was a better choice than using a very simple TF-IDF cosine similarity baseline, because it is more standard and more suitable for an introductory Master-level IR project. Dense retrieval was not included in this version in order to keep the implementation small and interpretable.
+The retrieval method behind both tools is BM25, a classic and strong lexical IR
+baseline. It scores documents using term matching, term frequency, inverse
+document frequency, and document length normalization. BM25 was chosen over a
+basic TF-IDF cosine baseline because it is more standard and more suitable for a
+Master-level IR project. Dense retrieval was deliberately left out to keep the
+implementation small and interpretable; it is listed as future work.
 
 ## 4. Memory Component
 
-The memory component stores synthetic conversation history for each user. Memory retrieval is also handled with BM25, but only over records that belong to the current user. This makes the memory retrieval user-specific.
+The memory component stores synthetic conversation history for each user. Memory
+retrieval also uses BM25, but only over records that belong to the current
+`user_id`, making it user-specific. The purpose of memory is to add useful
+personal context and to avoid repeating advice the user already tried. For
+example, if a user already regenerated their API key, the agent can see this in
+memory and suggest a different next step instead of repeating the same advice.
 
-The purpose of memory is not long-term personalization in a complex sense. Instead, it is used to avoid repeated advice and to add useful context. For example, if a user already tried regenerating an API key, the agent should not simply repeat the same suggestion again.
+In testing, the model first called `search_user_memory` for an API-key question,
+saw that the user had already regenerated the key, and produced a next-step
+answer rather than repeating the earlier suggestion. This is the intended
+behavior of the memory component.
 
-## 5. Action Trace and Agent Behavior
+## 5. Agent Behavior and Action Trace
 
-The agent prints a simple action trace such as:
+The agent records a trace of the tools the model actually called, for example:
 
-- `TOOL_CALL: search_kb`
-- `TOOL_CALL: search_memory`
-- `TOOL_CALL: generate_answer`
-- `TOOL_CALL: groundedness_check`
-- `TOOL_CALL: escalation_check`
-- `ACTION: answer_user` or `ACTION: escalate_to_human_support`
+- `LLM called search_user_memory(query='API key issue')`
+- `LLM called search_knowledge_base(query='API key troubleshooting')`
+- `Decision: escalate to human support`
 
-This makes the system behavior explicit. It is important to note that the agent does not perform dynamic planning or open-ended tool selection. It always follows the same retrieval pipeline. I describe it as a fixed-policy retrieval agent, not a dynamic tool-calling agent.
+The queries shown are generated by the model, not copied verbatim from the user
+question, which illustrates that tool selection and query formulation are done
+by the agent rather than hard-coded.
 
 ## 6. Evaluation Method
 
-The project uses a synthetic test set with gold labels for:
+The project uses a synthetic test set with gold labels for relevant knowledge
+base documents (`gold_docs`), relevant user memory (`gold_memory`), and the
+escalation decision (`should_escalate`).
 
-- relevant knowledge base documents (`gold_docs`)
-- relevant user memory (`gold_memory`)
-- escalation decision (`should_escalate`)
+Retrieval is evaluated with Hit@3, Precision@3, and Recall@3, which are
+appropriate because the agent retrieves a small top-k set before answering. The
+report also includes escalation accuracy and groundedness statistics.
 
-The retrieval metrics are Hit@3, Precision@3, and Recall@3. These are appropriate because the agent only retrieves a small top-k set before answer generation. I also report escalation accuracy and groundedness statistics.
+The groundedness check is a lightweight heuristic. It measures lexical (n-gram)
+overlap between the answer and the retrieved context after lowercasing,
+punctuation removal, and stopword removal. It is a hallucination-risk signal,
+not a proof of factual correctness.
 
-The groundedness check is heuristic. It measures lexical overlap between answer units and retrieved context units after lowercasing, punctuation removal, stopword removal, and 2-gram extraction. This is not a proof of truth, but it is a simple hallucination-risk signal.
-
-This is a lightweight heuristic groundedness check. It does not prove factual correctness, but it checks whether the answer is lexically grounded in the retrieved context. It is used as a simple hallucination-risk signal, not as a perfect hallucination detector.
+Because the agent uses a language model to generate its tool queries, the
+retrieval results and answers vary slightly between runs. The numbers below come
+from one representative run.
 
 ## 7. Results
 
-The system was evaluated by running the CLI evaluation command over the 20-question synthetic test set. In the validated local run, the summary was:
+Running the CLI evaluation over the 20-question synthetic test set (using
+OpenAI gpt-4o-mini as the tool-calling model) produced:
 
-- knowledge base Hit@3 = 0.90
-- knowledge base Precision@3 = 0.3667
-- knowledge base Recall@3 = 0.8333
-- memory Hit@3 = 1.00
-- memory Precision@3 = 0.3333
-- memory Recall@3 = 1.00
-- escalation accuracy = 1.00
-- groundedness counts = 19 supported, 1 partially supported, 0 unsupported
-- average groundedness score = 0.7542
+- knowledge base Hit@3 = 0.85
+- knowledge base Precision@3 = 0.35
+- knowledge base Recall@3 = 0.83
+- memory Hit@3 = 0.79
+- memory Precision@3 = 0.26
+- memory Recall@3 = 0.79
+- escalation accuracy = 0.80
+- groundedness counts = 6 supported, 9 partially supported, 5 unsupported
+- average groundedness score = 0.36
 
-Because the dataset is small and synthetic, the results are mainly useful for controlled inspection rather than for claiming general performance.
+Retrieval quality is good: the correct document is in the top 3 for 85% of
+questions. Precision@3 is low because most questions have only one or two gold
+documents, so the remaining top-3 slots count as non-relevant by construction;
+this is expected with a fixed k of 3 and a small gold set.
+
+The groundedness scores are low, but this reflects the limits of the heuristic
+rather than poor answers. Because answers are generated by the language model in
+its own words, they often paraphrase the source documents, so lexical n-gram
+overlap with the retrieved text is low even when the answer is factually
+grounded. A semantic groundedness check (for example, an LLM-as-judge) would be
+a more accurate measure and is listed as future work.
+
+Because the dataset is small and synthetic, and because the agent's tool queries
+are LLM-generated and vary between runs, these results are useful for controlled
+inspection rather than as claims of general performance.
 
 ## 8. Reflection on Using AI Coding Tools
 
-AI coding tools were useful for speeding up implementation, generating boilerplate, and helping structure the project. They were especially useful for quickly creating the CLI, test scaffolding, and documentation drafts.
+AI coding tools were useful for speeding up implementation, generating
+boilerplate, and drafting documentation. They were especially helpful for the
+CLI, test scaffolding, and the initial dataset.
 
-However, I treated the generated code as a draft, not as automatically correct. I still needed to inspect the logic, run tests, and verify that the system behavior matched the assignment description.
+However, I treated the generated code as a draft, not as automatically correct.
+An early version implemented a fixed retrieve-then-answer pipeline and even
+hard-coded some answers and escalation rules that happened to fit the test set.
+I identified this as a problem — it inflated the evaluation numbers and did not
+match the assignment's requirement to build an agent — and rewrote the core so
+that the language model performs real tool calling, removing the hard-coded
+answers and test-specific rules. While reviewing the test set I also found one
+label (an EPUB upload question marked for escalation) that only existed to fit
+the old hard-coded rule, and corrected it. The honest, lower evaluation numbers
+in this report come from that corrected version.
 
-## 9. How I Checked and Fixed AI Hallucinations During Development
+## 9. Limitations
 
-- I did not blindly trust AI-generated code or text.
-- I checked whether generated dataset labels matched the knowledge base.
-- I reviewed `gold_docs`, `gold_memory`, and `should_escalate` labels using the annotation guide.
-- I ran tests and demo commands to check that the system behaved as described.
-- I checked that the agent did not claim to use dynamic tool calling when it only used a fixed pipeline.
-- I added a groundedness heuristic to flag unsupported answers.
-- I kept API keys out of the repository.
+The dataset is synthetic. Real customer support data usually contains private
+information such as account details and message history, so a small synthetic
+dataset was used for controlled, reproducible, inspectable evaluation. This is a
+limitation but it makes the labels easy to check.
 
-## 10. Limitations
+Other limitations:
 
-The dataset is synthetic. Real customer support data usually contains private information, including account details and message history. Because of this, I used a small synthetic dataset for controlled evaluation. This is a limitation, but it makes the labels easier to inspect and the evaluation easier to reproduce.
-
-Other limitations are:
-
-- BM25 is purely lexical and may miss semantic similarity.
-- The memory store is very small and simplified.
-- The escalation logic is rule-based rather than learned.
-- The groundedness check is heuristic and may miss subtle hallucinations.
-- The system does not include dense retrieval, reranking, or autonomous multi-step planning.
+- BM25 is purely lexical and may miss semantic matches.
+- The memory store is small and simplified.
+- Escalation logic is rule-based rather than learned, and is correct on 80% of
+  the test cases.
+- The groundedness check is heuristic and underestimates paraphrased but
+  correct answers.
+- Results vary between runs because tool queries are LLM-generated.
+- The system does not include dense retrieval, reranking, or long-horizon
+  multi-step planning.

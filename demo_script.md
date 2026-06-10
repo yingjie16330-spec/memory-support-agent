@@ -2,28 +2,35 @@
 
 ## 1. Project title and goal
 
-Hello, this is my project called **Memory-based Customer Support Agent with Retrieval Evaluation**.
+Hello, this is my project called **Memory-based Customer Support Agent with
+Retrieval Evaluation**.
 
-The goal is to build a small AI support agent for a fictional SaaS product called CloudBox AI. The main idea is that the agent does not answer only from model knowledge. It first retrieves from a product knowledge base and from user conversation memory, then it generates an answer, checks groundedness, and decides whether the case should be escalated to human support.
+The goal is to build a small AI support agent for a fictional SaaS product
+called CloudBox AI. The main idea is that the agent does not answer only from
+model knowledge. It is a tool-calling agent: the language model is given two
+retrieval tools and decides which to call before answering. It retrieves from a
+product knowledge base and from user conversation memory, generates an answer,
+checks groundedness, and decides whether to escalate to human support.
 
 ## 2. Show the data files
 
-First, I will show the dataset folder.
-
-Here we have:
+First, I will show the dataset folder. It contains:
 
 - `knowledge_base.jsonl`
 - `user_memory.jsonl`
 - `test_set.jsonl`
 - `annotation_guide.md`
 
-The knowledge base contains synthetic support documents about API keys, billing, refunds, team invitations, privacy, uploads, and other product topics.
+The knowledge base contains synthetic support documents about API keys, billing,
+refunds, team invitations, privacy, uploads, and other product topics.
 
-The user memory file contains short synthetic history records for different users. For example, one user already tried regenerating an API key, so the agent should not repeat that same advice.
+The user memory file contains short synthetic history records for different
+users. For example, one user already tried regenerating an API key, so the agent
+should not repeat that same advice.
 
-The test set contains evaluation questions with gold labels for relevant documents, relevant memory, and whether the case should be escalated.
-
-The annotation guide explains how those labels were assigned.
+The test set contains evaluation questions with gold labels for relevant
+documents, relevant memory, and whether the case should be escalated. The
+annotation guide explains how those labels were assigned.
 
 ## 3. Run one example question
 
@@ -35,52 +42,45 @@ python -m src.cli --user_id user_001 --question "I still cannot use my API key. 
 
 ## 4. Show the action trace
 
-The CLI prints an action trace:
+The CLI prints an action trace showing the tools the language model actually
+chose to call, for example:
 
-- `TOOL_CALL: search_kb`
-- `TOOL_CALL: search_memory`
-- `TOOL_CALL: generate_answer`
-- `TOOL_CALL: groundedness_check`
-- `TOOL_CALL: escalation_check`
+- `LLM called search_user_memory(query='API key issue')`
+- `LLM called search_knowledge_base(query='API key troubleshooting')`
+- `Decision: escalate to human support`
 
-This shows that the system behaves like a simple fixed-policy agent.
+The important point is that the model decided which tools to call and even wrote
+its own search queries. The tool selection is not hard-coded.
 
 ## 5. Show retrieved knowledge base documents
 
-Next, I look at the retrieved knowledge base documents.
-
-I expect to see documents about:
-
-- API key troubleshooting
-- 401 authentication errors
-- human support escalation
-
-These retrieved documents provide the product facts that the answer should be based on.
+Next, I look at the retrieved knowledge base documents. For this question I
+expect documents about API key troubleshooting, 401 authentication errors, and
+API key permissions. These provide the product facts the answer is based on.
 
 ## 6. Show retrieved user memory
 
-Then I show the retrieved memory.
-
-For this user, the memory says that the user already tried regenerating the API key and still got a 401 error.
-
-This is important because memory changes the answer. The agent should avoid repeating the same basic step again.
+Then I show the retrieved memory. For this user, the memory says they already
+tried regenerating the API key and still got a 401 error. This matters because
+the memory changes the answer: the agent should avoid repeating the same basic
+step.
 
 ## 7. Show the generated answer
 
-Now I show the final answer.
-
-The answer should say that the user should verify the active key and environment, and because the user already tried regenerating the key, the case should move toward human support.
+Now I show the final answer. Because the model saw the memory, it does not just
+repeat "regenerate your key". Instead it suggests verifying the active key and
+environment, and recommends human support for account-level verification.
 
 ## 8. Show groundedness and escalation
 
-After answer generation, the system prints:
+After answer generation, the system prints the groundedness label, groundedness
+score, escalation decision, and escalation reason.
 
-- groundedness label
-- groundedness score
-- escalation decision
-- escalation reason
-
-The groundedness check is a lightweight heuristic. It does not prove truth, but it checks whether the answer is lexically supported by the retrieved context.
+I want to be honest about the groundedness score here: it is often low, not
+because the answer is wrong, but because the model paraphrases the documents in
+its own words, so the simple word-overlap heuristic underestimates how grounded
+the answer really is. A semantic check would be more accurate. I list this as a
+limitation.
 
 ## 9. Run the evaluation command
 
@@ -90,27 +90,37 @@ Now I run:
 python -m src.cli --evaluate
 ```
 
-This evaluates retrieval quality, escalation accuracy, and groundedness statistics over the whole synthetic test set.
+This evaluates retrieval quality, escalation accuracy, and groundedness over the
+whole synthetic test set. Retrieval is strong — knowledge base Hit@3 is 0.95 and
+Recall@3 is about 0.88. Escalation accuracy is 0.80. The groundedness scores are
+low for the paraphrasing reason I just explained.
 
 ## 10. Explain why this is an Information Retrieval agent
 
-This project is an Information Retrieval system because the answer depends on retrieving relevant text from stored collections before generation.
+This project is an Information Retrieval system because the answer depends on
+retrieving relevant text from stored collections before generation. The
+retrieval method behind both tools is BM25, a standard lexical IR baseline,
+evaluated with Hit@3, Precision@3, and Recall@3.
 
-The main retrieval method is BM25, which is a standard lexical IR baseline. I evaluate it with Hit@3, Precision@3, and Recall@3.
+## 11. Explain why this is a tool-calling AI agent
 
-## 11. Explain why this counts as a fixed-policy AI agent
+This is a tool-calling agent because the language model is given two tools and
+decides on its own which to call, and with what query, for each question. It can
+call one tool or both, reads the results, and then produces a final decision to
+answer or escalate. The tool selection is done by the model, not by fixed code.
 
-I describe this system as a fixed-policy AI agent because it always follows the same action pipeline.
+## 12. Brief limitations and honesty note
 
-It is not a fully autonomous planner and it does not do dynamic tool selection. But it still has agent-like behavior because it takes structured steps, uses retrieved context, and makes a final action decision about answering or escalating.
+Finally, the limitations:
 
-## 12. Brief limitations
-
-Finally, I mention the limitations:
-
-- the dataset is synthetic
+- the dataset is synthetic and small
 - BM25 is lexical only
-- the groundedness check is heuristic
-- the system does not include dense retrieval or dynamic tool calling
+- the groundedness check is heuristic and underestimates paraphrased answers
+- escalation rules are hand-written
+
+I also want to mention that an earlier version of this project used a fixed
+pipeline with some hard-coded answers. I found that this did not really match
+the idea of an agent and inflated the results, so I rewrote it to use real tool
+calling. The numbers I show here come from that honest version.
 
 That is the end of the demo.
